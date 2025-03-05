@@ -1,0 +1,156 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+/* Global Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Centered Container */
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Card Design */
+.card {
+    background: #ffffff;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #e6e9ec;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Heading Styles */
+h1, h2, h3 {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+/* Form Styles */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Input Fields */
+input[type="text"], 
+input[type="password"],
+input[type="file"] {
+    width: 80%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="file"]:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 6px rgba(52, 152, 219, 0.5);
+}
+
+/* Button Styles */
+button {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    padding: 12px 25px;
+    cursor: pointer;
+    border-radius: 25px;
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
+    transition: background 0.3s, box-shadow 0.3s;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #2980b9, #2471a3);
+    box-shadow: 0 6px 12px rgba(52, 152, 219, 0.6);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Result Card */
+.result-card {
+    background: #f0f2f5;
+    border-left: 5px solid #3498db;
+    text-align: left;
+    word-break: break-word;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    transition: background 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.result-card:hover {
+    background: #e6e9ec;
+}
+
+/* Error Messages */
+.error {
+    color: #e74c3c;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Logout Button */
+.logout-btn {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+}
+
+.logout-btn:hover {
+    background: linear-gradient(45deg, #c0392b, #a93226);
+}
+
+/* Flash Messages */
+.flash-messages {
+    list-style-type: none;
+    padding: 10px;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .card {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    input[type="text"], 
+    input[type="password"],
+    input[type="file"],
+    button {
+        width: 90%;
+    }
+}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Application Security</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if 'authenticated' not in session %}
+        <script>
+            window.location.href = "{{ url_for('login') }}";
+        </script>
+    {% endif %}
+
+    <div class="container">
+        <h1>Web Application Security</h1>
+
+        <div class="card">
+            <h3>Upload and Scan a File</h3>
+            <form id="uploadForm" method="post" enctype="multipart/form-data">
+                <input type="file" id="fileInput" name="file" required>
+                <button type="submit">Upload and Scan</button>
+            </form>
+        </div>
+
+        <!--Downlaod button script-->
+        <div id="downloadSection" style="display: none;">
+            <h3>Download File</h3>
+            <button id="downloadButton">Download File</button>
+        </div>
+
+        <div id="result"></div>
+
+        <!-- Logout Button -->
+        <form method="post" action="{{ url_for('logout') }}">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+
+    <!-- Login page Script-->
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+
+                    const formData = new FormData(loginForm);
+
+                    fetch("{{ url_for('login') }}", {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            alert(data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred. Please try again.');
+                    });
+                });
+            }
+        });
+    </script> -->
+
+    <!-- Upload Page Script -->
+    <script>
+       document.addEventListener('DOMContentLoaded', function() {
+    const uploadForm = document.getElementById('uploadForm');// Gets the uploadfomr
+    if (uploadForm) {
+        const resultContainer = document.getElementById('result');
+        const downloadSection = document.getElementById('downloadSection'); //gets the  Download Section
+        const downloadButton = document.getElementById('downloadButton'); // gets the  Download Button
+
+        uploadForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();// creates a FormData object to capture form inputs
+            const fileInput = document.getElementById('fileInput');
+            formData.append('file', fileInput.files[0]);
+            //Send a POST request to the Flask backend to upload the file
+            fetch("{{ url_for('upload_file') }}", {  
+                method: 'POST',// uses POST method to send the file data
+                body: formData// Attach the file data as the request body
+            })
+            .then(response => response.json())// converts the server repsonse to json
+            .then(data => {
+                // console.log("Upload Response:", data);
+                if (data.error) {
+                    resultContainer.innerHTML = `<p class="error">${data.error}</p>`;// shows the error message if uplaod fails 
+                    downloadSection.style.display = "none"; // hides download section on error
+                } else {
+                    // displays the scan results 
+                    resultContainer.innerHTML = `
+                        <div class="card result-card">
+                            <h2>Scan Results</h2>
+                            <p><strong>File Name:</strong> ${data.filename}</p>
+                            <p><strong>Scan Result:</strong> ${data.result}</p>
+                        </div>
+                    `;
+
+                            // shows Download Section and Set Download URL
+                            downloadSection.style.display = "block";
+                            downloadButton.onclick = function() {
+                                   //  generates the download URL dynamically using the returned filename
+                                window.location.href = "{{ url_for('download_file', filename='') }}" + data.filename;
+                            };
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);// logs any errors the accour during the request
+                resultContainer.innerHTML = `<p class="error">An error occurred. Please try again.</p>`;
+                downloadSection.style.display = "none"; // hides download section on error
+            });
+        });
+    }
+});
+
+    </script>
+
+</body>
+</html>
