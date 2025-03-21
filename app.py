@@ -1,3 +1,4 @@
+import sqlite3
 from flask import Flask, render_template, request, redirect, flash, jsonify, url_for, session
 from flask import send_from_directory, abort
 import pyotp
@@ -6,6 +7,8 @@ import requests
 from config import Config
 from flask_talisman import Talisman
 import uuid
+import sqlite3
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -48,6 +51,15 @@ virus_signatures = {
     'Virus_Script': b'eval('
 }
 
+def get_db_connection():
+    conn = sqlite3.connect('users.db')
+    conn.row_factory = sqlite3.Row  # Enables accessing columns by name
+    return conn
+
+@app.before_request
+def refresh_session_timeout():
+    session.permanent = True  # This enables session expiry based on Config.PermanentSessionLifetime
+
 def virus_scan(file_path):
     with open(file_path, 'rb') as file:# opens the file 
         content = file.read()#reads the file 
@@ -87,46 +99,72 @@ def file_scan(file_path):
     return scan_result
 
 # Route to handle user login
+# @app.route('/login', methods=['GET', 'POST'])  
+# def login():
+#     if request.method == 'POST':# checks if the user method is POST
+#         username = request.form.get('username')# gets the username from the form and store it 
+#         password = request.form.get('password')#gets the password from the form and store it
+
+
+#         if username == 'test1' and password == 'testpass1':# checks if the user name and password match the dummy name and password
+#             session['authenticated'] = True # if they are same then set user as authenticated in session
+#             session.modified = True  # ensures session is updated
+
+#             # print("Session Data After Login:", session)  # Debugging
+
+#             return jsonify({'success': True, 'redirect_url': url_for('index')}) # sends the sucess response 
+#         else:
+#             return jsonify({'success': False, 'error': 'Invalid credentials'}), 401 # sends the error response if login fails 
+
+#     # If GET request, render login page
+#     return render_template('login.html') 
+
+
 @app.route('/login', methods=['GET', 'POST'])  
 def login():
-    if request.method == 'POST':# checks if the user method is POST
-        username = request.form.get('username')# gets the username from the form and store it 
-        password = request.form.get('password')#gets the password from the form and store it
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
 
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        conn.close()
 
-        if username == 'test1' and password == 'testpass1':# checks if the user name and password match the dummy name and password
-            session['authenticated'] = True # if they are same then set user as authenticated in session
-            session.modified = True  # ensures session is updated
-
-            # print("Session Data After Login:", session)  # Debugging
-
-            return jsonify({'success': True, 'redirect_url': url_for('index')}) # sends the sucess response 
+        if user and check_password_hash(user['password'], password):
+            session['authenticated'] = True
+            session['username'] = username
+            session.permanent = True  # Set session as permanent to apply timeout
+            session['was_logged_in'] = True  # ✅ Add this flag
+            return jsonify({'success': True, 'redirect_url': url_for('index')})
         else:
-            return jsonify({'success': False, 'error': 'Invalid credentials'}), 401 # sends the error response if login fails 
+            return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
 
-    # If GET request, render login page
-    return render_template('login.html') 
+    return render_template('login.html')
 
 
-# 🔹 Logout Route
 @app.route('/logout', methods=['POST'])
 def logout():
-    session.clear()
+    session.clear()  # Clears everything including 'was_logged_in'
+    flash('You have been logged out.')
     return redirect(url_for('login'))
 
 
 @app.route('/')
 def index():
-    if not session.get('authenticated'):
-        return redirect(url_for('login'))
+    print(session)  # Check what's in the session on each request
+    if 'authenticated' not in session:
+      if session.get('was_logged_in'):
+        flash('Session expired! Please log in again.')
+      return redirect(url_for('login'))
     return render_template('index.html')
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
     # print("Session Data Before Upload:", session)  # Debugging
 
     if not session.get('authenticated'):#  checks if the user is authenticated before allowing file upload
-        return jsonify({'error': 'User not authenticated. Please log in again.'}), 401 # Return 401 if not logged in
+         return jsonify({'error': 'Session expired!.Please log in again.'}), 401 # Return 401 if not logged in
 
     if 'file' not in request.files:  #  checks if a file was uploaded in the request
         return jsonify({'error': 'No file part'}), 400  #Return 400 if no file was uploaded

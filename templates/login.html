@@ -21,46 +21,17 @@
         {% endwith %}
         
         <!-- Displays the login username and password text fields and sends the post -->
-        <form id="loginForm" action="{{ url_for('login') }}" method="post">
+        <form id="loginForm" action="{{ url_for('login') }}" method="post" data-login-url="{{ url_for('login') }}">
+        
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
+
     </div>
 
     <!-- JavaScript to psot the login data in to the url and send it to the flask-->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('loginForm'); // get the login form by its ID
-
-            form.addEventListener('submit', function(event) {// event listener to handle form submission 
-                event.preventDefault();  // Stop default form submission
-
-                const formData = new FormData(form);// object to store the form input 
-                const formBody = new URLSearchParams(formData).toString(); // Convert to URL encoded string
-
-                fetch("{{ url_for('login')|safe }}", { //  send an HTTP POST request to the Flask `/login` route
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'  // ensures correct encoding
-                    },
-                    body: formBody //send the form data as the request body
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // console.log("Server Response:", data);  
-                    if (data.success) {
-                        window.location.href = data.redirect_url; // Redirects user to the specified page
-                    } else {
-                        alert(data.error || 'Invalid credentials. Please try again.');// shows the message it credentaials are incorrect 
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            });
-        });
-    </script>
+       <!-- External JS file only! -->
+    <script src="/static/js/login.js"></script>
 </body>
 </html>

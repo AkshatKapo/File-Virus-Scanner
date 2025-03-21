@@ -136,6 +136,10 @@ button:active {
     border-radius: 5px;
     font-weight: bold;
 }
+.hidden {
+    display: none;
+}
+
 
 /* Responsive Design */
 @media (max-width: 600px) {
