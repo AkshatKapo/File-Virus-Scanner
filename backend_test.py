@@ -5,7 +5,7 @@ conn = sqlite3.connect('users.db')
 cursor = conn.cursor()
 
 # Fetch all users
-cursor.execute('SELECT * FROM users')
+cursor.execute('SELECT * FROM files')
 users = cursor.fetchall()
 
 for user in users:

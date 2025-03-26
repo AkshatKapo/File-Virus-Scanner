@@ -1,31 +1,47 @@
+
 import sqlite3
 from werkzeug.security import generate_password_hash
 
-# Connect to (or create) the database file
+# Connect to (or create) the database
+conn = sqlite3.connect('users.db')
+cursor = conn.cursor()
 
-database_conn = sqlite3.connect('users.db')
-
-# Create a new users table (if it doesn't exist)
-database_conn.execute('''
+# creates users table
+cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        email TEXT
     )
 ''')
-# Add a test user with a hashed password
-user_username = 'test1'
-user_password = 'testpass1'
-# Hash the password (NEVER store plain text passwords)
-password_hashed = generate_password_hash(user_password)
 
-# Insert the user into the table
+# creates files table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT NOT NULL,
+        uploaded_by TEXT NOT NULL,
+        scan_result TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (uploaded_by) REFERENCES users(username)
+    )
+''')
+
+# Add a test user
+username = 'test2'
+password = 'testpass2'
+email = 'test1@example.com'
+hashed_password = generate_password_hash(password)
+
+# Add the user info to the users table
 try:
-    database_conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (user_username, password_hashed))
-    print(f"User '{user_username}' added successfully.")
+    cursor.execute('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', 
+                   (username, hashed_password, email))
+    print(f"User '{username}' added successfully.")
 except sqlite3.IntegrityError:
-    print(f"User '{user_password}' already exists.")
+    print(f"User '{username}' already exists.")
 
-# Commit changes and close the connection
-database_conn.commit()
-database_conn.close()
+# Commit and close
+conn.commit()
+conn.close()

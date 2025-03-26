@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify OTP - WebApp Security</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="card">
+        <h2>Verify OTP</h2>
+         <!-- display Flash Messages to show pop-ups like error messages -->
+        {% with pop_messages = get_flashed_messages() %}
+            {% if pop_messages %}
+                <ul class="flash-messages">
+                    {% for message in pop_messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!--displays the form to enter OTP and send it to the route-->
+        <form method="post">
+            <input type="text" name="otp" placeholder="Enter OTP" required>
+            <button type="submit">Verify</button>
+        </form>
+    </div>
+</body>
+</html>

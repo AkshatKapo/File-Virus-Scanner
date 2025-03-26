@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - WebApp Security</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <div class="card">
         <h2>Login</h2>
         
         <!-- This Display Flash Messages to show pop-ups -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
+        {% with pop_messages = get_flashed_messages() %}
+            {% if pop_messages %}
                 <ul class="flash-messages">
-                    {% for message in messages %}
+                    {% for message in pop_messages %}
                         <li>{{ message }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}
         {% endwith %}
         
-        <!-- Displays the login username and password text fields and sends the post -->
-        <form id="loginForm" action="{{ url_for('login') }}" method="post" data-login-url="{{ url_for('login') }}">
+        <!-- Used to display the login username and password text fields and sends the post ro -->
+        <form id="loginForm" action="{{ url_for('login') }}" method="post" data-url="{{ url_for('login') }}">
         
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>

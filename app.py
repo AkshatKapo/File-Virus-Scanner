@@ -9,10 +9,13 @@ from flask_talisman import Talisman
 import uuid
 import sqlite3
 from werkzeug.security import check_password_hash
+import random
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = '468eac327af780aebd4d613d9a619cd8f9e94a2b964240a2b7d5cafedce77853'  # Secret key required for Flask sessions, provides randomenss 
+
 
 # Security Headers using Flask-Talisman, to enforce security measure like if data is comming from the same and valid origin 
 csp = {
@@ -50,15 +53,27 @@ virus_signatures = {
     'Worm_Malicious': b'\x50\x4B\x03\x04\x14\x00\x06\x00',
     'Virus_Script': b'eval('
 }
-
+ ## function to create and return the connection to the SQLite database
 def get_db_connection():
-    conn = sqlite3.connect('users.db')
-    conn.row_factory = sqlite3.Row  # Enables accessing columns by name
-    return conn
+    conn = sqlite3.connect('users.db')#connect to the SQlite database named as"users.db"
+    conn.row_factory = sqlite3.Row  # allows to access columns by name
+    return conn # returns the connection object so that it can be used to execute queries
+
+
+
+session_clear = False  # Global flag to ensure session is cleared only once
 
 @app.before_request
-def refresh_session_timeout():
-    session.permanent = True  # This enables session expiry based on Config.PermanentSessionLifetime
+def session_reset():
+    global session_clear
+    session.permanent = True  # Enable session timeout using Config.PERMANENT_SESSION_LIFETIME, whihc is set to 3 minutes
+
+    # Clear session once when the first request hits the server
+    # which means that whenever user start the Flask app starts, it clears the session
+    if not session_clear:
+        session.clear()
+        session_clear = True
+
 
 def virus_scan(file_path):
     with open(file_path, 'rb') as file:# opens the file 
@@ -98,64 +113,70 @@ def file_scan(file_path):
     
     return scan_result
 
-# Route to handle user login
-# @app.route('/login', methods=['GET', 'POST'])  
-# def login():
-#     if request.method == 'POST':# checks if the user method is POST
-#         username = request.form.get('username')# gets the username from the form and store it 
-#         password = request.form.get('password')#gets the password from the form and store it
-
-
-#         if username == 'test1' and password == 'testpass1':# checks if the user name and password match the dummy name and password
-#             session['authenticated'] = True # if they are same then set user as authenticated in session
-#             session.modified = True  # ensures session is updated
-
-#             # print("Session Data After Login:", session)  # Debugging
-
-#             return jsonify({'success': True, 'redirect_url': url_for('index')}) # sends the sucess response 
-#         else:
-#             return jsonify({'success': False, 'error': 'Invalid credentials'}), 401 # sends the error response if login fails 
-
-#     # If GET request, render login page
-#     return render_template('login.html') 
-
 
 @app.route('/login', methods=['GET', 'POST'])  
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+    if request.method == 'POST': # checks if the request method is post means user is submittng the login info
+        user_username = request.form.get('username')# gets the submitted username
+        user_password = request.form.get('password')# gets the submitted password
 
+       # Connect to the database and try to fetch the user with the given user username
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (user_username,)).fetchone()
         conn.close()
 
-        if user and check_password_hash(user['password'], password):
-            session['authenticated'] = True
-            session['username'] = username
-            session.permanent = True  # Set session as permanent to apply timeout
-            session['was_logged_in'] = True  # ✅ Add this flag
-            return jsonify({'success': True, 'redirect_url': url_for('index')})
+        if user and check_password_hash(user['password'], user_password):
+            otp = str(random.randint(100000, 999999))  # generates a 6-digit OTP for verification
+            session['otp'] = otp # saves OTP to session
+            session['authenticated'] = False  # not fully authenticated yet, user opt should match with session OTP
+            session['username'] = user_username  # saves username in session
+            session.permanent = True  # sets the session as permanent to apply timeout
+            session['was_logged_in'] = True  # set to true because user is logged in 
+            session['pending_otp'] = True # set to true because OTP is not checked yet
+
+            print(f" OTP for user '{user_username}': {otp}")# pritns the OTP on the terminal
+
+
+            return jsonify({'success': True, 'redirect_url': url_for('check_otp')})# if sucess then it jumpts to check_otp function check user entered OTP
         else:
-            return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
+            return jsonify({'success': False, 'error': 'Invalid credentials'}), 401 # if not sucess it shows the 402 error 
 
     return render_template('login.html')
+@app.route('/check_otp', methods=['GET', 'POST'])
+def check_otp():
+    if request.method == 'POST':
+        user_input = request.form.get('otp')  # gets the OTP entered by the user
+
+        if user_input == session.get('otp'):  # checks if it matches the OTP stored in session
+            session['authenticated'] = True  # if correct, authenticate the user fully
+            session.pop('otp', None)  # remove the otp from session
+            session.pop('pending_otp', None)  # remove pending flag
+            return redirect(url_for('index'))  # redirect to index page
+        else:
+            flash('Invalid OTP. Please try again.')  # flash error if OTP is wrong
+
+    return render_template('otp.html')  # render OTP input page
 
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    session.clear()  # Clears everything including 'was_logged_in'
-    flash('You have been logged out.')
-    return redirect(url_for('login'))
+    session.clear()  # clears the whole session including was_logged_in
+    flash('You have been logged out.')#shows the messaged to the user so they can log again if session is timed out or want to log out
+    return redirect(url_for('login'))# runs the login route so ti can check user login info again
+
 
 
 @app.route('/')
 def index():
     print(session)  # Check what's in the session on each request
-    if 'authenticated' not in session:
-      if session.get('was_logged_in'):
-        flash('Session expired! Please log in again.')
-      return redirect(url_for('login'))
+
+    if not session.get('authenticated'):# checks if the user is not authenticated
+    # If the user had previously logged in but is no longer authenticated,
+    # it likely means the session expired so it redirect to the login route to ask user to login again
+        if session.get('was_logged_in'):
+            flash('Session expired or OTP not verified! Please log in again.')  # Show a flash message to inform the user that session or OTP not verified
+        return redirect(url_for('login'))# redirects the user back to the login page
+
     return render_template('index.html')
 
 
@@ -179,6 +200,15 @@ def upload_file():
         get_file.save(filepath)
 
         result = file_scan(filepath)# check file for tjreats
+            
+        conn = get_db_connection()# connects to the SQLite database
+
+        conn.execute(
+            'INSERT INTO files (filename, uploaded_by, scan_result) VALUES (?, ?, ?)',# saves the file information with results into the database in the files table
+            (filename, session['username'], result)
+        )
+        conn.commit()# commits the trasnaction to save the changes in the database 
+        conn.close()# closes the connection
         return jsonify({ # Retunrs the JSON response with scan results 
             'filename': filename,
             'result': result
