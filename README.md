@@ -3,49 +3,52 @@
 # SecurityProject - File Virus Scanner
 ## Output
 
+<p>Login Page:</p>
+
 ![image](https://github.com/user-attachments/assets/0f0ca6f5-ddcc-4e09-82b1-32c8a6d3a254)
 
-<p>Login Page</p>
+<P>User Interface for uploading file:</P>
 
 ![image](https://github.com/user-attachments/assets/7958e7ca-7646-4a04-b2dd-6171a0dc32c2)
 
-<P>User Interface for uploading file</P>
+<P>File Scanned result:</P>
 
 ![image](https://github.com/user-attachments/assets/e137039c-1463-484a-94cd-41b1f43fa088)
 
-<P>File Scanned result</P>
+<p>Example of invalid file type being scanned:</p>
 
 ![image](https://github.com/user-attachments/assets/8f328601-dffe-4b2e-9cff-b098dc990ec3)
 
-<p>Example of invalid file type being scanned</p>
+<p>Example of text file being scanned:</p>
 
 ![image](https://github.com/user-attachments/assets/862d5efc-26c5-40e7-bd36-69ae314068f6)
 
-<p>Example of text file being scanner</p>
+<p>Example of file being downloaded: </p>
 
 ![image](https://github.com/user-attachments/assets/00df7f60-df4e-46c7-8562-b1c59ae47571)
 
-<p>Example of file being downloaded </p>
+<p>Example of virus being detected:</p>
 
 ![image](https://github.com/user-attachments/assets/6cb54ce8-2ea0-40c0-ae19-bda14f1066b8)
 
-<p>Example of virus being detected</p>
+
+<p>User being timed out:</p>
 
 ![image](https://github.com/user-attachments/assets/83792d40-7b5f-48eb-b871-b2e698ae7b45)
 
-<p>User being timed out</p>
+<p>User being required to login again after inactivity:</p>
 
 ![image](https://github.com/user-attachments/assets/635ab194-21cf-49a8-a61e-73e5cc6f1e2a)
 
-<p>User being required to login again after inactivity</p>
+<p>Application requiring multi factor authentication</p>
 
 ![image](https://github.com/user-attachments/assets/8c78e386-a761-4e52-86ec-4482ec5f239a)
 
-<p>Application requiring multi factor authentication</p>
+
+<p>Error screen when wrong code is entered by the user</p>
 
 ![image](https://github.com/user-attachments/assets/e0523bad-16a2-4108-8c42-b469ab2a6bf1)
 
-<p>Error screen when wrong code is entered by the user</p>
 ## How to Run
 
 ### 1. Download or Clone the Project
